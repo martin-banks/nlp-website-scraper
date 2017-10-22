@@ -8,7 +8,7 @@ Takes in an URL, selects all items on page, processes it's text content, extract
 ## Dependancies
 
 Package | What does it do? | Docs
---- | ---
+--- | --- | ---
 nlp_compromise | Natural languge processing | https://github.com/nlp-compromise/compromise
 js-dom | Virtual dom in node | https://github.com/tmpvar/jsdom
 
