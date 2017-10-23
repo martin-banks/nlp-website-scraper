@@ -11,9 +11,9 @@ const schema = section => ({
 	location: 'aus',
 	section: {
 		name: `${section}`,
-		wrapper: 'story-block',
-		title: 'story-block h4',
-		description: 'story-block p.standfirst',
+		wrapper: '.story-block',
+		title: '.story-block h4',
+		description: '.story-block p.standfirst',
 		link: 'story-block h4 a',
 		blacklist: [],
 	},

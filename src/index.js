@@ -69,6 +69,7 @@ function createDir(dir) {
 }
 
 function writeFile({ name, content } = {}) {
+	// console.log({ name, content })
 	return new Promise ((resolve, reject) => {
 		fs.writeFile(path.join(__dirname, `../data_store/${sessionID}/${name}`), content, err => {
 			if (err) reject(new Error(err))
@@ -76,25 +77,39 @@ function writeFile({ name, content } = {}) {
 		})
 	})
 }
-
-
-// function createSessionDir(){
+function createFolderSet({ folders } = {}) {
+	const createdAllDirs = folders.map(folder => new Promise((resolve, reject) => {
+		createDir(`../data_store/${sessionID}/${folder}`)
+			.then(resolve(true))
+			.catch(reject(false))
+	}))
+	return Promise.all(createdAllDirs)
+}
+// function readDir({ path }) {
 // 	return new Promise((resolve, reject) => {
-// 		resolve(createDir(`/data_store/${sessionID}`))
+// 		fs.readDir(path.join(__dirname, `${sessionID}/${dir}`), (err, data) => {
+// 			if (err) reject(new Error(err))
+// 		})
 // 	})
 // }
 
+
+function cleanFolderName(name) {
+	return name === '/' ? 'home' : name.replace(/\//g, '__')
+}
+
 // create brand directory
 function createDirectories() {
-	sessionID = 'test_session'
-	const createdAllDirs = Object
-		.keys(sourcelist)
-		.map(key => new Promise((resolve, reject) => {
-			createDir(`../data_store/${sessionID}/${key}`)
-				.then(resolve(true))
-				.catch(reject(false))
-		}))
-	return Promise.all(createdAllDirs)
+	const folders = Object.keys(sourcelist).reduce((output, source) => {
+		const update = output
+		sourcelist[source].forEach(section => {
+			const { name } = section.section
+			const folderName = cleanFolderName(name)
+			update.push(`${source}/${folderName}`)
+		})
+		return update
+	}, [])
+	return createFolderSet({ folders })
 }
 
 
@@ -109,15 +124,53 @@ function createBrandResultManifest() {
 	return Promise.all(createdAllManifests)
 }
 
-// create section directory
-function createSectionDirectory() {}
 
+function nlpDomArticles() {
+	const { wrapper, description, name } = arguments[0].section
+	const brand = arguments[1]
+	const dom = arguments[2]
+	const articles = [...dom.window.document.querySelectorAll(description)]
+	const articleNLP = articles.map((article, i) => new Promise((resolve, reject) => {
+		console.log(article.innerHTML)
+		const names = nlp(article.innerHTML)
+			.people()
+			.out('freq')
+		if (!names.length) resolve(null)
+		console.log(`${brand}/${cleanFolderName(name)}/names_${i}.json`)
+		writeFile({ name: `${brand}/${cleanFolderName(name)}/names__${i}.json`, content: JSON.stringify(names, 'utf8', 2) })
+			.then(resolve(true))
+			.catch(reject(false))
+	}))
+	return Promise.all(articleNLP)
+}
 
-// load link
-function loadDomForSection() {}
+function createDom({ page, brand }) {
+	console.log({ brand })
+	const { url } = page
+	const { name, wrapper } = page.section
+	return new Promise((resolve, reject) => {
+		resolve(JSDOM.fromURL(url)
+			.then(nlpDomArticles.bind(null, page, brand))
+			.catch(console.log))
+	})
+}
 
-// save page to file
-function savePageSource() {}
+// load link + save page as file
+function loadDomForSections() {
+	Object.keys(sourcelist).forEach(key => {
+		const loadedDoms = sourcelist[key].map(page => new Promise((resolve, reject) => {
+			console.log({ key })
+			createDom({ page, brand: key })
+				.then(resolve(true))
+				.catch(reject(false))
+			reject(false)
+		})
+			.catch(console.log)
+		)
+		Promise.all(loadedDoms)
+	})
+}
+
 
 // get all article links from section page
 // search page for article links
@@ -131,9 +184,14 @@ function saveSectionContent() {}
 // process text
 // write to new file
 
-
+function createSession() {
+	const d = new Date()
+	const DD = x => `0${x}`.slice(-2)
+	return `${d.getFullYear()}${DD(d.getMonth())}${DD(d.getDate())}__${DD(d.getHours())}_${DD(d.getMinutes())}_${DD(d.getSeconds())}`
+}
+sessionID = createSession()
 createDirectories()
-	.then(createBrandResultManifest)
+	.then(loadDomForSections)
 	.then(console.log)
 	.catch(console.log)
 
