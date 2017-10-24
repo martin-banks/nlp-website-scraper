@@ -126,18 +126,29 @@ function createBrandResultManifest() {
 
 
 function nlpDomArticles() {
-	const { wrapper, description, name } = arguments[0].section
+	const { wrapper, description, name, title, link } = arguments[0].section
 	const brand = arguments[1]
 	const dom = arguments[2]
-	const articles = [...dom.window.document.querySelectorAll(description)]
+	const articles = [...dom.window.document.querySelectorAll(wrapper)]
 	const articleNLP = articles.map((article, i) => new Promise((resolve, reject) => {
-		console.log(article.innerHTML)
-		const names = nlp(article.innerHTML)
-			.people()
-			.out('freq')
-		if (!names.length) resolve(null)
-		console.log(`${brand}/${cleanFolderName(name)}/names_${i}.json`)
-		writeFile({ name: `${brand}/${cleanFolderName(name)}/names__${i}.json`, content: JSON.stringify(names, 'utf8', 2) })
+		const data = nlp(article.innerHTML)
+		const searches = {
+			title: article.querySelector(title),
+			description: article.querySelector(description),
+			link: article.querySelector(link),
+		}
+
+		const output = {
+			brand,
+			title: searches.title ? searches.title.innerHTML.replace(/\n+|\t+/g, '') : null,
+			description: searches.description ? searches.description.innerHTML.replace(/\n+|\t+/g, '') : null,
+			link: searches.link ? searches.link.getAttribute('href') : null,
+			nlp: {
+				names: data.people().out('freq'),
+			},
+			raw: article.innerHTML,
+		}
+		writeFile({ name: `${brand}/${cleanFolderName(name)}/names__${i}.json`, content: JSON.stringify(output, 'utf8', 2) })
 			.then(resolve(true))
 			.catch(reject(false))
 	}))

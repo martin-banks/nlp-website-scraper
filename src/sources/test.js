@@ -12,14 +12,13 @@ const schema = section => ({
 	section: {
 		name: `${section}`,
 		wrapper: '.story-block',
-		title: '.story-block h4',
-		description: '.story-block p.standfirst',
-		link: 'story-block h4 a',
+		title: 'h4.heading a',
+		description: '.standfirst span',
+		link: 'a',
 		blacklist: [],
 	},
 	article: { include: 'story-content p' },
 })
 
 module.exports = sections.map(schema)
-
 
