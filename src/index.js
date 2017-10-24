@@ -80,18 +80,11 @@ function writeFile({ name, content } = {}) {
 function createFolderSet({ folders } = {}) {
 	const createdAllDirs = folders.map(folder => new Promise((resolve, reject) => {
 		createDir(`../data_store/${sessionID}/${folder}`)
-			.then(resolve(true))
-			.catch(reject(false))
+			.then(resolve)
+			.catch(reject)
 	}))
 	return Promise.all(createdAllDirs)
 }
-// function readDir({ path }) {
-// 	return new Promise((resolve, reject) => {
-// 		fs.readDir(path.join(__dirname, `${sessionID}/${dir}`), (err, data) => {
-// 			if (err) reject(new Error(err))
-// 		})
-// 	})
-// }
 
 
 function cleanFolderName(name) {
@@ -100,6 +93,7 @@ function cleanFolderName(name) {
 
 // create brand directory
 function createDirectories() {
+	console.log('creating directories')
 	const folders = Object.keys(sourcelist).reduce((output, source) => {
 		const update = output
 		sourcelist[source].forEach(section => {
@@ -125,20 +119,20 @@ function createBrandResultManifest() {
 }
 
 
-function nlpDomArticles() {
-	const { wrapper, description, name, title, link } = arguments[0].section
-	const brand = arguments[1]
-	const dom = arguments[2]
+function nlpDomArticles({ dom, page, brand }) {
+	const { wrapper, description, name, title, link } = page.section
+	// const brand = arguments[1]
+	// const dom = arguments[2]
 	const articles = [...dom.window.document.querySelectorAll(wrapper)]
 	const articleNLP = articles.map((article, i) => new Promise((resolve, reject) => {
+		const filename = `${brand}/${cleanFolderName(name)}/${`00${i}`.slice(-3)}.json`
 		const data = nlp(article.innerHTML)
 		const searches = {
 			title: article.querySelector(title),
 			description: article.querySelector(description),
 			link: article.querySelector(link),
 		}
-
-		const output = {
+		const output = JSON.stringify({
 			brand,
 			title: searches.title ? searches.title.innerHTML.replace(/\n+|\t+/g, '') : null,
 			description: searches.description ? searches.description.innerHTML.replace(/\n+|\t+/g, '') : null,
@@ -147,8 +141,9 @@ function nlpDomArticles() {
 				names: data.people().out('freq'),
 			},
 			raw: article.innerHTML,
-		}
-		writeFile({ name: `${brand}/${cleanFolderName(name)}/names__${i}.json`, content: JSON.stringify(output, 'utf8', 2) })
+		}, 'utf8', 2)
+
+		writeFile({ name: filename, content: output })
 			.then(resolve(true))
 			.catch(reject(false))
 	}))
@@ -156,53 +151,90 @@ function nlpDomArticles() {
 }
 
 function createDom({ page, brand }) {
-	console.log({ brand })
 	const { url } = page
 	const { name, wrapper } = page.section
 	return new Promise((resolve, reject) => {
-		resolve(JSDOM.fromURL(url)
-			.then(nlpDomArticles.bind(null, page, brand))
-			.catch(console.log))
+		JSDOM.fromURL(url)
+			.then(r => {
+				nlpDomArticles({ dom: r, page, brand }).then(resolve)
+			})
+			.catch(console.log)
 	})
+}
+
+function processSectionsDoms(key) {
+	const loadedDoms = sourcelist[key].map(page => new Promise((resolve, reject) => {
+		createDom({ page, brand: key })
+			.then(resolve)
+			.catch(reject)
+	})
+		.catch(console.log)
+	)
+	return Promise.all(loadedDoms)
 }
 
 // load link + save page as file
 function loadDomForSections() {
-	Object.keys(sourcelist).forEach(key => {
-		const loadedDoms = sourcelist[key].map(page => new Promise((resolve, reject) => {
-			console.log({ key })
-			createDom({ page, brand: key })
-				.then(resolve(true))
-				.catch(reject(false))
-			reject(false)
+	const allDoms = Object.keys(sourcelist).map(key => new Promise((resolve, reject) => {
+		processSectionsDoms(key)
+			.then(resolve)
+			.catch(reject)
+	}))
+	return Promise.all(allDoms)
+
+}
+
+function createSessionID() {
+	const d = new Date()
+	const DD = x => `0${x}`.slice(-2)
+	return `${d.getFullYear()}${DD(d.getMonth() + 1)}${DD(d.getDate())}__${DD(d.getHours())}_${DD(d.getMinutes())}_${DD(d.getSeconds())}`
+}
+
+
+function readDir({ path }) {
+	return new Promise((resolve, reject) => {
+		fs.readdir(path, (err, data) => {
+			if (err) return reject(new Error(err))
+			resolve(data)
 		})
-			.catch(console.log)
-		)
-		Promise.all(loadedDoms)
 	})
 }
 
+const fileBlacklist = [
+	'.DS_Store'
+]
 
-// get all article links from section page
-// search page for article links
-function getSectionPageContent() {}
+function processSession() {
+	console.log(arguments)
+	console.log({sessionID})
+	const sessionDir = path.join(__dirname, `../data_store/${sessionID}`)
+	readDir({ path: sessionDir })
+		// .then(readDir.bind(null, { path: path.join(sessionDir, 'nca') }))
+		.then(dirContent => new Promise((resolve, reject) => {
+			const children = dirContent.filter(x => !fileBlacklist.includes(x)).map(d => new Promise((res, rej) => {
+				return readDir({ path: path.join(sessionDir, d) })
+					.then(console.log)
+					.catch(rej)
+			}))
+			return Promise.all(children)
+		}))
+		.then(console.log)
 
-// save items to file
-function saveSectionContent() {}
-
-
-// read file
-// process text
-// write to new file
-
-function createSession() {
-	const d = new Date()
-	const DD = x => `0${x}`.slice(-2)
-	return `${d.getFullYear()}${DD(d.getMonth())}${DD(d.getDate())}__${DD(d.getHours())}_${DD(d.getMinutes())}_${DD(d.getSeconds())}`
+		// .then(r => {
+		// 	r.filter(x => !fileBlacklist.includes(x)).forEach(x => {
+		// 		readDir({ path: path.join(sessionDir, x) })
+		// 			.then(console.log)
+		// 			.catch(console.log)
+		// 	})
+		// })
+		.catch(console.log)
 }
-sessionID = createSession()
-createDirectories()
-	.then(loadDomForSections)
-	.then(console.log)
-	.catch(console.log)
 
+
+;(function start(){
+	sessionID = createSessionID()
+	createDirectories()
+		.then(loadDomForSections)
+		.then(processSession)
+		.catch(console.log)
+}())
