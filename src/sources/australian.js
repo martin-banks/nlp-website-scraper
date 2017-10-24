@@ -1,19 +1,21 @@
 const sections = [
-	'/',
-	// 'entertainment',
-	// 'entertainment/movies',
+	// '/',
+	'news/nation',
+	'news/world',
+	// 'arts',
+	// 'arts/film',
 ]
 
 const schema = section => ({
-	brand: 'News.com.au',
-	endpoint: 'http://news.com.au',
-	url: `http://news.com.au/${section}`,
+	brand: 'the Australian',
+	endpoint: 'http://theaustralian.com.au',
+	url: `http://theaustralian.com.au/${section}`,
 	location: 'aus',
 	section: {
 		name: `${section}`,
 		wrapper: '.story-block',
 		title: 'h4.heading a',
-		description: '.standfirst span',
+		description: '.standfirst span, p.standfirst',
 		link: 'a',
 		blacklist: [],
 	},
@@ -21,4 +23,5 @@ const schema = section => ({
 })
 
 module.exports = sections.map(schema)
+
 

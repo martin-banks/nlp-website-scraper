@@ -57,6 +57,7 @@ const sourcelist = require('./sources/_index')
 
 
 let sessionID = null
+let sessionData = null
 // create session directory
 
 function createDir(dir) {
@@ -126,24 +127,51 @@ function nlpDomArticles({ dom, page, brand }) {
 	const articles = [...dom.window.document.querySelectorAll(wrapper)]
 	const articleNLP = articles.map((article, i) => new Promise((resolve, reject) => {
 		const filename = `${brand}/${cleanFolderName(name)}/${`00${i}`.slice(-3)}.json`
-		const data = nlp(article.innerHTML)
 		const searches = {
 			title: article.querySelector(title),
 			description: article.querySelector(description),
 			link: article.querySelector(link),
 		}
-		const output = JSON.stringify({
+		const dataToSearch = () => {
+			if (searches.description) {
+				return searches.description.innerHTML
+			} else if (searches.title) {
+				return searches.title.innerHTML
+			}
+			return ''
+		}
+		const data = nlp(dataToSearch()) 
+		const output = {
 			brand,
-			title: searches.title ? searches.title.innerHTML.replace(/\n+|\t+/g, '') : null,
+			section: name,
+			title: searches.title ? searches.title.innerHTML.replace(/\n+|\t+/g, '') : '',
 			description: searches.description ? searches.description.innerHTML.replace(/\n+|\t+/g, '') : null,
 			link: searches.link ? searches.link.getAttribute('href') : null,
 			nlp: {
 				names: data.people().out('freq'),
 			},
 			raw: article.innerHTML,
-		}, 'utf8', 2)
+		}
 
-		writeFile({ name: filename, content: output })
+		data.people().out('array').forEach(n => {
+			console.log({n})
+			n = n.replace('\'s', '')
+			if (!sessionData[n]) sessionData[n] = {
+				count: 0,
+				articles: [],
+			}
+			if (sessionData[n].articles.some(a => a.title.includes(output.title))) return
+			sessionData[n].count++
+			sessionData[n].articles.push({
+				title: output.title,
+				description: output.description,
+				link: output.link,
+				brand: output.brand,
+				section: output.section,
+			})
+		})
+
+		writeFile({ name: filename, content: JSON.stringify(output, 'utf8', 2) })
 			.then(resolve(true))
 			.catch(reject(false))
 	}))
@@ -187,7 +215,7 @@ function loadDomForSections() {
 function createSessionID() {
 	const d = new Date()
 	const DD = x => `0${x}`.slice(-2)
-	return `${d.getFullYear()}${DD(d.getMonth() + 1)}${DD(d.getDate())}__${DD(d.getHours())}_${DD(d.getMinutes())}_${DD(d.getSeconds())}`
+	return `${d.getFullYear()}${DD(d.getMonth() + 1)}${DD(d.getDate())}__${DD(d.getHours())}${DD(d.getMinutes())}${DD(d.getSeconds())}`
 }
 
 
@@ -204,37 +232,57 @@ const fileBlacklist = [
 	'.DS_Store'
 ]
 
-function processSession() {
-	console.log(arguments)
-	console.log({sessionID})
-	const sessionDir = path.join(__dirname, `../data_store/${sessionID}`)
-	readDir({ path: sessionDir })
-		// .then(readDir.bind(null, { path: path.join(sessionDir, 'nca') }))
-		.then(dirContent => new Promise((resolve, reject) => {
-			const children = dirContent.filter(x => !fileBlacklist.includes(x)).map(d => new Promise((res, rej) => {
-				return readDir({ path: path.join(sessionDir, d) })
-					.then(console.log)
-					.catch(rej)
-			}))
-			return Promise.all(children)
-		}))
-		.then(console.log)
+// function processSession() {
+// 	console.log(arguments)
+// 	console.log({sessionID})
+// 	const sessionDir = path.join(__dirname, `../data_store/${sessionID}`)
+// 	readDir({ path: sessionDir })
+// 		// .then(readDir.bind(null, { path: path.join(sessionDir, 'nca') }))
+// 		.then(dirContent => new Promise((resolve, reject) => {
+// 			const children = dirContent
+// 				.filter(x => !fileBlacklist.includes(x))
+// 				.map(d => new Promise((res, rej) => {
+// 					return readDir({ path: path.join(sessionDir, d) })
+// 						.then(console.log)
+// 						.catch(rej)
+// 				}))
+// 			return Promise.all(children)
+// 		}))
+// 		.then(console.log)
 
-		// .then(r => {
-		// 	r.filter(x => !fileBlacklist.includes(x)).forEach(x => {
-		// 		readDir({ path: path.join(sessionDir, x) })
-		// 			.then(console.log)
-		// 			.catch(console.log)
-		// 	})
-		// })
-		.catch(console.log)
+// 		// .then(r => {
+// 		// 	r.filter(x => !fileBlacklist.includes(x)).forEach(x => {
+// 		// 		readDir({ path: path.join(sessionDir, x) })
+// 		// 			.then(console.log)
+// 		// 			.catch(console.log)
+// 		// 	})
+// 		// })
+// 		.catch(console.log)
+// }
+
+function writeSessionData(){
+	console.log('writing sesion data')
+	return new Promise((res, rej) => {
+		const content = JSON.stringify(sessionData, 'utf8', 2)
+		const name = 'session.json'
+		writeFile({ name, content })
+			.then(res)
+			.catch(rej)
+	})
+}
+
+function eol() {
+	console.log('session complete')
 }
 
 
 ;(function start(){
 	sessionID = createSessionID()
+	sessionData = {}
 	createDirectories()
 		.then(loadDomForSections)
-		.then(processSession)
+		// .then(processSession)
+		.then(writeSessionData)
+		.then(eol)
 		.catch(console.log)
 }())

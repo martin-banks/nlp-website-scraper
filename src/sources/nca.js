@@ -1,7 +1,9 @@
 const sections = [
-	'/',
-	'entertainment',
-	'entertainment/movies',
+	// '/',
+	'national',
+	'world',
+	// 'entertainment',
+	// 'entertainment/movies',
 ]
 
 const schema = section => ({
@@ -17,7 +19,7 @@ const schema = section => ({
 		link: 'a',
 		blacklist: [],
 	},
-	article: { include: 'story-content p' },
+	article: { include: '.story-content p' },
 })
 
 module.exports = sections.map(schema)
