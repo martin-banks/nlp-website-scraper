@@ -11,6 +11,7 @@ block content
 				ul(class= 'hidden' data-type="articlelist")
 					button Toggle article list
 					for article in item.articles
-						li
-							p= article.title
-							h6= article.brand
+						a(href= article.link)
+							li
+								p= article.title
+								h6= article.brand

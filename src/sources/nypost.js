@@ -1,5 +1,5 @@
 const sections = [
-	// '/',
+	'/',
 	'news',
 	// 'entertainment',
 	// 'movies',
