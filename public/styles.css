@@ -37,3 +37,11 @@ button {
 	border-radius: 4px;
 	border: none;
 }
+
+a {
+	color: black;
+	text-decoration: none;
+}
+a:visited {
+	color: lightblue;
+}
