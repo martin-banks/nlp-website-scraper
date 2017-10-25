@@ -1,0 +1,16 @@
+extends _layout.pug
+
+block content
+	h1 Top names
+	h4 Session: #{session}
+	ul
+		for item in topNames
+			div(class='wrapper')
+				h2= item.name
+				h4 Count: #{item.count}
+				ul(class= 'hidden' data-type="articlelist")
+					button Toggle article list
+					for article in item.articles
+						li
+							p= article.title
+							h6= article.brand

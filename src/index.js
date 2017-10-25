@@ -154,7 +154,7 @@ function nlpDomArticles({ dom, page, brand }) {
 		}
 
 		data.people().out('array').forEach(n => {
-			console.log({n})
+			// console.log({n})
 			n = n.replace('\'s', '')
 			if (!sessionData[n]) sessionData[n] = {
 				count: 0,
@@ -271,18 +271,40 @@ function writeSessionData(){
 	})
 }
 
+
+
 function eol() {
 	console.log('session complete')
 }
 
 
-;(function start(){
+function printSession() {
+	return new Promise((resolve, reject) => {
+		fs.readFileSync(path.join(__dirname, `../data_store/${sessionID}/session.json`), (err, file) => {
+			if (err) throw new Error(err)
+			const data = JSON.parse(file)
+			const orderedNames = Object.keys(data)
+				.map(key => ({ name: key, count: data[key].count }))
+				.sort((a, b) => b.count - a.count)
+			console.log(orderedNames)
+			resolve(orderedNames)
+		})
+	})
+}
+
+
+function start(){
 	sessionID = createSessionID()
 	sessionData = {}
-	createDirectories()
+	return createDirectories()
 		.then(loadDomForSections)
 		// .then(processSession)
 		.then(writeSessionData)
 		.then(eol)
-		.catch(console.log)
-}())
+		.then(printSession)
+		.catch('oh no')		
+}
+
+start()
+
+// module.exports = start

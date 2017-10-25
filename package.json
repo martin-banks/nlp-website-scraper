@@ -12,8 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "compromise": "^11.0.2",
+    "express": "^4.16.2",
     "jsdom": "^11.3.0",
     "mkdirp": "^0.5.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "pug": "^2.0.0-rc.4"
   }
 }
