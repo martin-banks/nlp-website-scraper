@@ -2,7 +2,24 @@ const express = require('express')
 const fs = require('fs')
 const path = require('path')
 const pug = require('pug')
+const { CronJob } = require('cron')
+const getData = require('../src/index')
 
+let i = 0
+const job = new CronJob({
+	// cronTime: '00 00 00,06,12,18 * * *',
+	cronTime: '00 00 00,06,12,18 * * *',
+	onTick: () => {
+		i++
+		console.log('Cron jobs run:', i)
+		getData()
+	},
+	start: false,
+	timeZone: 'Australia/Sydney'
+})
+
+// set up web service
+const port = 7001
 const app = express()
 const router = express.Router()
 
@@ -33,4 +50,5 @@ router.get('/', (req, res) => {
 	})
 })
 
-app.listen(4000, () => console.log('listening on 4000'))
+app.listen(port, () => console.log(`listening on ${port}`))
+job.start()
