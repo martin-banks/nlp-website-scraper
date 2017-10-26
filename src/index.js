@@ -158,6 +158,7 @@ function processSectionsDoms(key) {
 // load link + save page as file
 function loadDomForSections() {
 	const allDoms = Object.keys(sourcelist).map(key => new Promise((resolve, reject) => {
+		console.log('Loading dom for', key)
 		processSectionsDoms(key)
 			.then(resolve)
 			.catch(reject)
@@ -205,6 +206,7 @@ function eol() {
 
 
 function printSession() {
+	console.log('session data')
 	return new Promise((resolve, reject) => {
 		fs.readFileSync(path.join(__dirname, `../data_store/${sessionID}/session.json`), (err, file) => {
 			if (err) throw new Error(err)
@@ -212,7 +214,7 @@ function printSession() {
 			const orderedNames = Object.keys(data)
 				.map(key => ({ name: key, count: data[key].count }))
 				.sort((a, b) => b.count - a.count)
-			console.log(orderedNames)
+			// console.log(orderedNames)
 			resolve(orderedNames)
 		})
 	})
@@ -227,10 +229,10 @@ function start(){
 		// .then(processSession)
 		.then(writeSessionData)
 		.then(eol)
-		.then(printSession)
+		// .then(printSession)
 		.catch('oh no')		
 }
 
 start()
 
-// module.exports = start
+module.exports = start
