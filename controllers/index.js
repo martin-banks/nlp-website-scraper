@@ -38,7 +38,7 @@ exports.sessionList = (req, res) => {
 		if (err) return console.log(err)
 		const sessions = data
 			.filter(d => !blacklist.includes(d))
-			.sort((a, b) => parseInt(a.split('__').join(''), 10) - parseInt(b.split('__').join(''), 10))
+			.sort((a, b) => parseInt(b.split('__').join(''), 10) - parseInt(a.split('__').join(''), 10))
 		res.render('sessions', { sessions })
 	})
 }
