@@ -221,18 +221,20 @@ function printSession() {
 }
 
 
-function start(){
-	sessionID = createSessionID()
-	sessionData = {}
-	return createDirectories()
-		.then(loadDomForSections)
-		// .then(processSession)
-		.then(writeSessionData)
-		.then(eol)
-		// .then(printSession)
-		.catch('oh no')		
-}
+(function start(){
+	const args = process.argv
+	if (args[2] === 'RUN') {
+		sessionID = createSessionID()
+		sessionData = {}
+		return createDirectories()
+			.then(loadDomForSections)
+			// .then(processSession)
+			.then(writeSessionData)
+			.then(eol)
+			// .then(printSession)
+			.catch('oh no')		
+	} else {
+		return module.exports = start
+	}
+})()
 
-start()
-
-module.exports = start

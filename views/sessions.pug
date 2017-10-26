@@ -1,0 +1,8 @@
+extends _layout.pug
+
+block content
+	h1 Available sessions
+	ul
+		for session in sessions
+			div.wrapper
+				a(href=`/sessions/${session}`)= session
