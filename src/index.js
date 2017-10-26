@@ -7,53 +7,7 @@ const path = require('path')
 const mkdirp = require('mkdirp')
 
 const sourcelist = require('./sources/_index')
-// const sources = [
-// 	{
-// 		brand: 'News.com.au',
-// 		section: 'home',
-// 		url: 'http://news.com.au',
-// 		location: 'aus',
-// 		section: {
-// 			include: 'story-block',
-// 			title: 'story-block h4',
-// 			description: 'story-block p.standfirst',
-// 			link: 'story-block h4 a',
-// 			blacklist: [],
-// 		},
-// 		article: {
-// 			include: 'story-content p'
-// 		}
-// 	}
-// ]
 
-
-// how to handle output???
-// function readNames(props) {
-// 	const { url } = props
-// 	const { wrapper } = props.section
-// 	JSDOM.fromURL(url).then(dom => {
-// 		dom.window.document
-// 			.querySelectorAll(wrapper)
-// 			.forEach(wrapper => {
-// 				wrapper
-// 					.querySelectorAll('*')
-// 					.forEach(item => {
-// 						const text = (item.innerHTML)
-// 							.toString()
-// 							.replace(/<.+>/g, '') // remove any additional html tags
-
-// 						const names = nlp(text)
-// 							.people()
-// 							.out('freq')
-// 						if (!names.length) return
-// 						const output = names
-						
-// 					})
-
-// 				console.log(output)
-// 			})
-// 	});
-// }
 
 
 let sessionID = null
@@ -231,34 +185,6 @@ function readDir({ path }) {
 const fileBlacklist = [
 	'.DS_Store'
 ]
-
-// function processSession() {
-// 	console.log(arguments)
-// 	console.log({sessionID})
-// 	const sessionDir = path.join(__dirname, `../data_store/${sessionID}`)
-// 	readDir({ path: sessionDir })
-// 		// .then(readDir.bind(null, { path: path.join(sessionDir, 'nca') }))
-// 		.then(dirContent => new Promise((resolve, reject) => {
-// 			const children = dirContent
-// 				.filter(x => !fileBlacklist.includes(x))
-// 				.map(d => new Promise((res, rej) => {
-// 					return readDir({ path: path.join(sessionDir, d) })
-// 						.then(console.log)
-// 						.catch(rej)
-// 				}))
-// 			return Promise.all(children)
-// 		}))
-// 		.then(console.log)
-
-// 		// .then(r => {
-// 		// 	r.filter(x => !fileBlacklist.includes(x)).forEach(x => {
-// 		// 		readDir({ path: path.join(sessionDir, x) })
-// 		// 			.then(console.log)
-// 		// 			.catch(console.log)
-// 		// 	})
-// 		// })
-// 		.catch(console.log)
-// }
 
 function writeSessionData(){
 	console.log('writing sesion data')
