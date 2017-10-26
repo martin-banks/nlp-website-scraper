@@ -1,11 +1,17 @@
+
 html
+	include partials/_navigation.pug
 head
 	meta(charset="UTF-8")
 	title Document
 	link(rel="stylesheet", href="/styles.css")
 body
+	+navigation
 	div#app
-		block content
+		div.wrapper
+			block header
+		div.wrapper
+			block content
 
 footer
 	script(src="/index.js")

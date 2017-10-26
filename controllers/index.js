@@ -21,7 +21,6 @@ function readSession(sessionId, res) {
 			.sort((a, b) => b.count - a.count)
 		res.render('topNames', { topNames, session: sessionId })
 	})
-
 }
 
 exports.lastSession = (req, res) => {

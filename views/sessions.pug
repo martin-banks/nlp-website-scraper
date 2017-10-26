@@ -1,8 +1,9 @@
 extends _layout.pug
 
-block content
+block header
 	h1 Available sessions
+block content
 	ul
 		for session in sessions
-			div.wrapper
+			div.card
 				a(href=`/sessions/${session}`)= session

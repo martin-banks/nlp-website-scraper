@@ -10,7 +10,6 @@ const { lastSession, sessionList, getSession } = controllers
 
 let i = 0
 const job = new CronJob({
-	// cronTime: '00 00 00,06,12,18 * * *',
 	cronTime: '00 00 00,06,12,18 * * *',
 	onTick: () => {
 		i++
@@ -28,6 +27,13 @@ const app = express()
 const router = express.Router()
 
 app.set('view engine', 'pug')
+app.use((req, res, next) => {
+	res.locals.nav = [
+		{ label: 'Home', link: '/', icon: '' },
+		{ label: 'Sessions', link: '/sessions', icon: '' },
+	]
+	next()
+})
 app.use(express.static('public'))
 app.use(router)
 

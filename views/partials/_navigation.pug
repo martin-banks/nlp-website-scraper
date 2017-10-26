@@ -1,0 +1,5 @@
+mixin navigation
+	div.nav
+		ul
+			for item in locals.nav
+				a(href=item.link class="nav__link")= item.label
