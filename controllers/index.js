@@ -22,13 +22,19 @@ function readSession(sessionId, res) {
 		res.render('topNames', { topNames, session: sessionId })
 	})
 }
+function newestFirst(a, b) {
+	return parseInt(b.split('__').join(''), 10) - parseInt(a.split('__').join(''), 10)
+}
+function notInBlacklist(item) {
+	return item !== '.DS_Store'
+}
 
 exports.lastSession = (req, res) => {
 	fs.readdir(dataStore, (dirErr, dirData) => {
-		if (dirErr) return res.send(dirErr)
+		if (dirErr) return console.log(dirErr)
 		const ordered = dirData
-			.filter(d => d !== '.DS_Store')
-			.sort((a, b) => parseInt(b.split('__').join(''), 10) - parseInt(a.split('__').join(''), 10))
+			.filter(notInBlacklist)
+			.sort(newestFirst)
 		readSession(ordered[0], res)
 	})
 }
@@ -37,8 +43,8 @@ exports.sessionList = (req, res) => {
 	fs.readdir(dataStore, (err, data) => {
 		if (err) return console.log(err)
 		const sessions = data
-			.filter(d => !blacklist.includes(d))
-			.sort((a, b) => parseInt(b.split('__').join(''), 10) - parseInt(a.split('__').join(''), 10))
+			.filter(notInBlacklist)
+			.sort(newestFirst)
 		res.render('sessions', { sessions })
 	})
 }

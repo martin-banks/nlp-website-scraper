@@ -75,6 +75,7 @@ function createBrandResultManifest() {
 
 
 function nlpDomArticles({ dom, page, brand }) {
+	console.log('getting articles from dom', brand)
 	const { wrapper, description, name, title, link } = page.section
 	// const brand = arguments[1]
 	// const dom = arguments[2]
@@ -135,10 +136,12 @@ function nlpDomArticles({ dom, page, brand }) {
 function createDom({ page, brand }) {
 	const { url } = page
 	const { name, wrapper } = page.section
+	console.log('creating', url)
 	return new Promise((resolve, reject) => {
 		JSDOM.fromURL(url)
-			.then(r => {
-				nlpDomArticles({ dom: r, page, brand }).then(resolve)
+			.then(dom => {
+				nlpDomArticles({ dom, page, brand })
+					.then(resolve)
 			})
 			.catch(console.log)
 	})
