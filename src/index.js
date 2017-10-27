@@ -224,20 +224,20 @@ function printSession() {
 }
 
 
-(function start(){
+function start(){
 	const args = process.argv
+	console.log('calling with args:', args)
 	if (args[2] === 'RUN') {
 		sessionID = createSessionID()
 		sessionData = {}
-		return createDirectories()
+		createDirectories()
 			.then(loadDomForSections)
 			// .then(processSession)
 			.then(writeSessionData)
 			.then(eol)
 			// .then(printSession)
 			.catch('oh no')		
-	} else {
-		return module.exports = start
 	}
-})()
+}
 
+module.exports = start

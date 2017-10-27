@@ -1,6 +1,6 @@
 const express = require('express')
-const fs = require('fs')
-const path = require('path')
+// const fs = require('fs')
+// const path = require('path')
 const pug = require('pug')
 const { CronJob } = require('cron')
 const getData = require('../src/index')

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "getdata": "node src/index.js RUN",
-    "server": "nodemon app/app.js",
+    "serverdev": "nodemon app/app.js",
+    "server": "node app/app.js RUN",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
